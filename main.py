@@ -2,6 +2,7 @@ import tkinter as tk
 from enum import Enum
 from sequence_area import SequenceArea
 from block import Block
+from block_types import *
 
 
 class BlockTypes(Enum):
@@ -18,34 +19,43 @@ template_blocks = [
     (BlockTypes.TEST_THREE, "blue")
 ]
 
+# template_blocks = [
+#     (TestBlockOne())
+# ]
+
 root = tk.Tk()
 root.geometry("800x400")
 root.title("Configurable Autonomous Program Builder")
 
 # template boxes live here
-palette = tk.Frame(root, width=250, bg="#dddddd")
+palette = tk.Frame(root, width=450, bg="#dddddd")
 palette.pack(side="left", fill="y")
 
 program_container = tk.Frame(root)
 program_container.pack(side="right", fill="both", expand=True)
 
-program = SequenceArea(program_container)
+sequence_area = SequenceArea(program_container)
 
 
 def handle_drop(block, x, y):
     """When the block is dropped in the sequence area, clone a non template block there."""
-    if program.contains(x, y):
-        if block.is_template:
-            new_block = block.clone(program.frame)
-            program.add_block(new_block)
-        else:
+    print(f"Dropped block {block.block_type} at ({x}, {y})")
+
+    if block.is_template:
+        if sequence_area.contains(x, y):
+            new_block = block.clone(sequence_area.frame)
+            new_block.drop_callback = handle_drop
+            sequence_area.add_block(new_block)
+    else:
+        if not sequence_area.contains(x, y):
             block.destroy()
+            sequence_area.blocks.remove(block)
 
 
 # creates the block templates in the palette
 for block_type, color in template_blocks:
     block = Block(palette, block_type, color, is_template=True)
     block.drop_callback = handle_drop
-    block.pack(pady=5, padx=10, fill="x")
+    block.pack(pady=15, padx=15, fill="x")
 
 root.mainloop()

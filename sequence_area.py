@@ -18,7 +18,7 @@ class SequenceArea:
 
     def add_block(self, block):
         self.blocks.append(block)
-        block.pack(anchor="w", pady=2, padx=10)
+        block.pack(anchor="w", pady=15, padx=50)
 
     def dump_program(self):  # returns a list of block types in sequence
         return [b.block_type for b in self.blocks]
