@@ -1,8 +1,10 @@
+import time
 import tkinter as tk
 from enum import Enum
 from sequence_area import SequenceArea
 from block import Block
 from block_types import *
+import nt_interface
 
 
 class BlockTypes(Enum):
@@ -19,9 +21,7 @@ template_blocks = [
     (BlockTypes.TEST_THREE, "blue")
 ]
 
-# template_blocks = [
-#     (TestBlockOne())
-# ]
+nt = nt_interface.NTInterface()
 
 root = tk.Tk()
 root.geometry("800x400")
@@ -52,9 +52,14 @@ def handle_drop(block, x, y):
             sequence_area.blocks.remove(block)
 
 
+blocks_json = nt.get_block_types_json()
+
+print("Block Types JSON from NT:", blocks_json)
+
 # creates the block templates in the palette
 for block_type, color in template_blocks:
-    block = Block(palette, block_type, color, is_template=True)
+    block = Block(palette, block_type, color, params=[
+                  "haha", "hehe"], is_template=True)
     block.drop_callback = handle_drop
     block.pack(pady=15, padx=15, fill="x")
 

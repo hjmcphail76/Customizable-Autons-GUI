@@ -2,7 +2,7 @@ import tkinter as tk
 
 
 class Block:
-    def __init__(self, parent, block_type, color, is_template=False):
+    def __init__(self, parent, block_type, color, params: list[str], is_template=False):
         self.dragging = False
 
         self.block_type = block_type

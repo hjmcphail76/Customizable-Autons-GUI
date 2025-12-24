@@ -1,28 +1,42 @@
 import time
 from ntcore import NetworkTableInstance
+import json
 
 
 class NTInterface:
     def __init__(self):
+        # Get default NT instance
         self.inst = NetworkTableInstance.getDefault()
+
+        self.inst.setServer("127.0.0.1")
         self.inst.startClient4("DynamicAutoGuiClient")
 
-        self.inst.startDSClient()
+        # Wait a moment to connect
+        time.sleep(0.5)
 
-        self.table = self.inst.getTable("DynamicAutoConfigurations")
-        self.routine_pub = self.table.getStringArrayTopic(
-            "returnedRoutine").publish()
+        self.table = self.inst.getTable("SmartDashboard/DynamicAutos")
+
+        self.routine_json_pub = self.table.getStringTopic(
+            "routineJson").publish()
+
         time.sleep(0.1)
 
-    def publish_routine(self, routine: list[str]):
-        self.routine_pub.set(routine)
-        self.inst.flush()
-        print("Published routine:", routine)  # debugging
+    def publish_routine_json(self, routine_dict: dict):
+        """Publish an autonomous routine as JSON to NetworkTables"""
+        json_str = json.dumps(routine_dict)
+        self.routine_json_pub.set(json_str)
+        self.inst.flush()  # force sending
+
+    def get_block_types_json(self) -> str:
+        entry = self.table.getStringTopic("BlockTypes").getEntry("")
+        while entry.get("") == "":
+            self.inst.flush()
+            time.sleep(0.1)
+
+        return entry.get("")
 
 
 if __name__ == "__main__":
-    nt_interface = NTInterface()
-    # wait for networktables to connect, simulates startup time for the gui
-    time.sleep(1)
-    nt_interface.publish_routine(
-        ["Test Block One", "Test Block Two", "Test Block Three"])
+    nt = NTInterface()
+
+    print("Block Types JSON from NT:", nt.get_block_types_json())
