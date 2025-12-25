@@ -21,4 +21,9 @@ class SequenceArea:
         block.pack(anchor="w", pady=15, padx=50)
 
     def dump_program(self):  # returns a list of block types in sequence
-        return [b.block_type for b in self.blocks]
+        program = {}
+        for i, block in enumerate(self.blocks):
+            program[f"block_{i}"] = {
+                "type": block.block_name,
+                "params": block.get_params_dict()
+            }

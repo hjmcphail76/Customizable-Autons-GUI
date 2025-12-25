@@ -2,12 +2,12 @@ import tkinter as tk
 
 
 class Block:
-    def __init__(self, parent, block_type, color, params: list[str], is_template=False):
+    def __init__(self, parent, block_name, color, params: list[dict], is_template=False):
         self.dragging = False
-
-        self.block_type = block_type
+        self.block_name = block_name
         self.color = color
         self.is_template = is_template
+        self.params = params
 
         width = 200 if not is_template else 140
 
@@ -25,29 +25,43 @@ class Block:
         # Title label
         self.title = tk.Label(
             self.widget,
-            text=block_type.value,
+            text=block_name,
             bg=color,
             fg="white",
             font=("Arial", 10, "bold")
         )
         self.title.pack(anchor="w", padx=1, pady=(4, 2))
 
-        # Parameter entries TODO: make this a loop
-        self.param1 = tk.Entry(
-            self.widget, width=15, bg="white", textvariable=tk.StringVar(value="default"))
-        self.param2 = tk.Entry(self.widget, width=16)
+        self.param_entry_widget = {}
 
-        params_frame = tk.Frame(self.widget)
-        params_frame.pack(in_=self.widget, anchor="w",
-                          padx=6, pady=(4, 6), fill="x")
+        params_frame = tk.Frame(self.widget, bg=self.color)
+        params_frame.pack(anchor="w", padx=6, pady=(4, 6), fill="x")
 
-        self.param1.pack(side="left", padx=(0, 6), ipady=3)
-        self.param2.pack(side="left", ipady=3)
+        for param in params:
+            name = param.get("name", "param")
+            default = param.get("default", "")
 
-        for entry in (self.param1, self.param2):
+            row = tk.Frame(params_frame, bg=self.color)
+            row.pack(fill="x", pady=2)
+
+            label = tk.Label(
+                row,
+                text=name + ":",
+                bg=self.color,
+                fg="white",
+                font=("Arial", 9)
+            )
+            label.pack(side="left")
+
+            entry = tk.Entry(row, textvariable=tk.StringVar(
+                value=default), width=12)
+
+            entry.pack(side="left", padx=4)
+
             entry.bind("<Key>", lambda e: print("typing works"))
-
             entry.bind("<Button-1>", lambda e, ent=entry: ent.focus_set())
+
+            self.param_entry_widget[name] = entry
 
         for block_segment in (self.widget, self.title):
             block_segment.bind("<ButtonPress-1>", self.on_press)
@@ -72,11 +86,24 @@ class Block:
         if self.drop_callback:
             self.drop_callback(self, event.x_root, event.y_root)
 
+    def get_params_dict(self):
+        """retrive the current entered parameters as a dict"""
+        current_params = {}
+
+        for param in self.param_entry_widget:
+            current_params[param] = self.param_entry_widget[param].get()
+
+        print("Current parameters for block", self.block_name)
+        print(current_params)
+
+        return current_params
+
     def clone(self, new_parent):
         return Block(
-            new_parent,
-            self.block_type,
-            self.color,
+            parent=new_parent,
+            block_name=self.block_name,
+            color=self.color,
+            params=self.params,
             is_template=False
         )
 

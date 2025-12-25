@@ -1,3 +1,4 @@
+import json
 import time
 import tkinter as tk
 from enum import Enum
@@ -39,7 +40,7 @@ sequence_area = SequenceArea(program_container)
 
 def handle_drop(block, x, y):
     """When the block is dropped in the sequence area, clone a non template block there."""
-    print(f"Dropped block {block.block_type} at ({x}, {y})")
+    print(f"Dropped block {block.block_name} at ({x}, {y})")
 
     if block.is_template:
         if sequence_area.contains(x, y):
@@ -51,16 +52,32 @@ def handle_drop(block, x, y):
             block.destroy()
             sequence_area.blocks.remove(block)
 
+    nt.publish_routine_json(sequence_area.dump_program())
+
 
 blocks_json = nt.get_block_types_json()
 
-print("Block Types JSON from NT:", blocks_json)
+blocks_json = json.loads(blocks_json)
 
-# creates the block templates in the palette
-for block_type, color in template_blocks:
-    block = Block(palette, block_type, color, params=[
-                  "haha", "hehe"], is_template=True)
+print("Block Types JSON from NT:", blocks_json)
+print()
+# create blocks from the json data
+for block_info in blocks_json:
+    block_name = str(block_info)
+    print(block_name)
+
+    params_dict_lst = blocks_json.get(block_name).get(
+        "params", {})  # List of param dicts
+
+    for param in params_dict_lst:
+        print(param)
+
+    block = Block(palette, block_name=block_name, color="red",
+                  params=params_dict_lst, is_template=True)
+
     block.drop_callback = handle_drop
     block.pack(pady=15, padx=15, fill="x")
+
+    print()
 
 root.mainloop()
