@@ -24,7 +24,7 @@ sequence_area = SequenceArea(program_container)
 
 dump_program_btn = tk.Button(
     program_container,
-    text="Dump Program to Robot",
+    text="Dump Program to Network Tables",
     bg="green",
     height=1,
     font=("Arial", 15, "bold"),
